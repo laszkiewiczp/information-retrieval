@@ -27,7 +27,7 @@ class Evaluate:
             self.p10 = np.size(true_positive)/10
             
             #Get recall@100
-            true_positive = np.intersect1d(search_result, self.gt_doc_ids)
+            true_positive = np.intersect1d(self.search_result[:100], self.gt_doc_ids)
             self.recall = np.size(true_positive) / number_of_relevant_docs
             
             total_retrieved_docs = len(self.search_result)
@@ -43,11 +43,9 @@ class Evaluate:
             self.mrr = metrics.mean_reciprocal_rank(relev_judg_results)
             
             
-    def evalPR(self):
         [dummyA, rank_rel, dummyB] = np.intersect1d(self.search_result, self.gt_doc_ids, return_indices=True)
         rank_rel = np.sort(rank_rel) + 1
-        number_of_relevant_docs = sum(x != 0 for x in self.gt.values())
-        
+                
         if number_of_relevant_docs == 0:
             return [np.zeros(11, ), [], number_of_relevant_docs]
         
@@ -55,8 +53,8 @@ class Evaluate:
         precision = np.arange(1, number_of_relevant_docs + 1) / rank_rel
         
         precision_interpolated = np.maximum.accumulate(precision)
-        recall_11point = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        precision_11point = np.interp(recall_11point, recall, precision)
+        self.recall_11point = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        self.precision_11point = np.interp(self.recall_11point, recall, precision)
 
         if False:
             print(number_of_relevant_docs)
@@ -65,6 +63,4 @@ class Evaluate:
             print(precision)
             plt.plot(recall, precision, color='b', alpha=1)  # Raw precision-recall
             plt.plot(recall, precision_interpolated, color='r', alpha=1)  # Interpolated precision-recall
-            plt.plot(recall_11point, precision_11point, color='g', alpha=1)  # 11-point interpolated precision-recall
-
-        return [precision_11point, recall_11point, number_of_relevant_docs]
+            plt.plot(self.recall_11point, self.precision_11point, color='g', alpha=1)  # 11-point interpolated precision-recall

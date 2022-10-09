@@ -30,7 +30,7 @@ class VectorSpaceModel:
         self.index = index
         self.X = X
             
-    def get_top_query_results(self, query: str, n = 100) -> list[str]:
+    def get_top_query_results(self, query: str) -> list[str]:
         '''
         Function used to find search results for a given query
         '''
@@ -41,6 +41,7 @@ class VectorSpaceModel:
         doc_scores = np.array(1 - pairwise_distances(self.X, query_tfidf, metric='cosine')[:, 0])
         
         #Find indices of top scores, sorted
+        n = len(doc_scores)
         top_indices = np.argpartition(doc_scores, -n)[-n:]
         top_indices = np.flip(top_indices[np.argsort(doc_scores[top_indices])])
         
