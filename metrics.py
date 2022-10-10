@@ -5,13 +5,13 @@ import numpy as np
 class Evaluate:
     
     def __init__(self, query, search_result):
-        self.gt = {k: v for k, v in query.ground_truth.items() if v != 0}
+        self.gt = {k: v for k, v in query.ground_truth.items() if v != '0'}
         self.gt_doc_ids = list(self.gt.keys())
         self.gt_ratings = list(self.gt.values())
         
         self.search_result = search_result
     
-        number_of_relevant_docs = sum(x != 0 for x in self.gt.values())        
+        number_of_relevant_docs = sum(x != '0' for x in self.gt.values())        
         
         if number_of_relevant_docs == 0:            
             self.p10 = 0
