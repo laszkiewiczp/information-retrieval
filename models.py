@@ -13,23 +13,38 @@ class VectorSpaceModel:
     '''
     
     def __init__(self, TrialsData: Type[ClinicalTrials],
-                 tokenize: bool = False):
+                 lemmatize: bool = False, unigrams: bool = True,
+                 bigrams: bool = False, lowercase: bool = False,
+                 stopwords = None):
+        
+        if unigrams:
+            lower_range = 1
+        else:
+            lower_range = 1
+        
+        if bigrams:
+            upper_range = 2
+        else:
+            upper_range = 1
+            
         #Corpus is a list of brief titles
         corpus = list(TrialsData.brief_titles.values())
         
-        if tokenize:
+        if lemmatize:
             nlp = spacy.load("en_core_web_sm")
             for idx, document in enumerate(corpus):
                 doc = [token.lemma_ + ' ' for token in nlp(document)]
                 doc_text = ''.join(doc)
                 corpus[idx] = doc_text
+         
 
         #Rearrange id_list so that the order matches brief titles
         id_list = list(TrialsData.brief_titles.keys())
 
         #Learn a vocab of unigrams and bigrams
-        index = TfidfVectorizer(ngram_range=(1, 1), analyzer='word',
-                            stop_words=None, lowercase = False)
+        index = TfidfVectorizer(ngram_range=(lower_range, upper_range),
+                                analyzer='word', stop_words=stopwords,
+                                lowercase = lowercase)
         index.fit(corpus)
 
         #Compute the corpus representation
@@ -39,13 +54,13 @@ class VectorSpaceModel:
         self.id_list = np.array(id_list)
         self.index = index
         self.X = X
-        self.tokenize = tokenize
+        self.lemmatize = lemmatize
             
     def get_top_query_results(self, query: str) -> list[str]:
         '''
         Function used to find search results for a given query
         '''
-        if self.tokenize:
+        if self.lemmatize:
             nlp = spacy.load("en_core_web_sm")
             lemmas = [token.lemma_ + ' ' for token in nlp(query)]
             query = ''.join(lemmas)
@@ -74,16 +89,38 @@ class LMJM:
     
     '''
     
-    def __init__(self, TrialsData: Type[ClinicalTrials], arg_lambda: float):
+    def __init__(self, TrialsData: Type[ClinicalTrials], arg_lambda: float,
+                 unigrams: bool = True, bigrams: bool = False,
+                 lowercase: bool = False, stopwords = None,
+                 lemmatize: bool = False):
+        
+        if unigrams:
+            lower_range = 1
+        else:
+            lower_range = 1
+        
+        if bigrams:
+            upper_range = 2
+        else:
+            upper_range = 1
+        
         #Corpus is a list of brief titles
         corpus = list(TrialsData.brief_titles.values())
+        
+        if lemmatize:
+            nlp = spacy.load("en_core_web_sm")
+            for idx, document in enumerate(corpus):
+                doc = [token.lemma_ + ' ' for token in nlp(document)]
+                doc_text = ''.join(doc)
+                corpus[idx] = doc_text
         
         #Rearrange id_list so that the order matches brief titles
         id_list = list(TrialsData.brief_titles.keys())
         
         #Learn a vocab of unigrams
-        vectorizer = CountVectorizer(ngram_range=(2, 2), analyzer='word',
-                            stop_words=None, lowercase = True)
+        vectorizer = CountVectorizer(ngram_range=(lower_range, upper_range),
+                                     analyzer='word', stop_words=stopwords,
+                                     lowercase = lowercase)
         
         X = vectorizer.fit_transform(corpus)
         word_indices = vectorizer.get_feature_names_out()
@@ -107,8 +144,15 @@ class LMJM:
         self.term_corpus_p = term_corpus_p
         self.term_doc_p = term_doc_p
         self.arg_lambda = arg_lambda
+        self.lemmatize = lemmatize
         
     def get_top_query_results(self, query: str) -> list[str]:
+        
+        if self.lemmatize:
+            nlp = spacy.load("en_core_web_sm")
+            lemmas = [token.lemma_ + ' ' for token in nlp(query)]
+            query = ''.join(lemmas)
+            
         #Transform query to vectorized form
         query_vectorized = self.vectorizer.transform([query]).toarray()[0]
         p = np.zeros(self.term_doc_p.shape[0])
