@@ -141,8 +141,8 @@ class LMJM:
         self.id_list = np.array(id_list)
         self.vectorizer = vectorizer
         self.word_indices = word_indices
-        self.term_corpus_p = term_corpus_p
-        self.term_doc_p = term_doc_p
+        self.term_corpus_p = np.array(term_corpus_p)
+        self.term_doc_p = np.array(term_doc_p)
         self.arg_lambda = arg_lambda
         self.lemmatize = lemmatize
         
@@ -155,19 +155,20 @@ class LMJM:
             
         #Transform query to vectorized form
         query_vectorized = self.vectorizer.transform([query]).toarray()[0]
-        p = np.zeros(self.term_doc_p.shape[0])
+        non_zero_idx = np.where(query_vectorized != 0)
+        query_non_zero = query_vectorized[non_zero_idx]
         
-        document_t_p = np.power(self.arg_lambda * self.term_doc_p,
-                                    query_vectorized)
+        #Calculate probabilities for different documents
+        document_t_p = np.power(self.arg_lambda * self.term_doc_p[:, non_zero_idx],
+                                    query_non_zero)
         
-        corpus_t_p = np.power((1 - self.arg_lambda) * self.term_corpus_p,
-                              query_vectorized)
+        corpus_t_p = np.power((1 - self.arg_lambda) * self.term_corpus_p[:, non_zero_idx],
+                              query_non_zero)
         
-        sums = document_t_p + corpus_t_p
+        sums = np.log(document_t_p + corpus_t_p)
         
-        for idx, single_sum in enumerate(sums):
-            new_single_sum = [x for x in single_sum.tolist()[0] if x != 2]
-            p[idx] = np.product(new_single_sum)
+        p = [np.sum(single_sum) for single_sum in sums]
+        p = np.array(p)
         
         #Find indices of top scores, sorted
         n = len(p)
