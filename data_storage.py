@@ -10,8 +10,15 @@ class ClinicalTrials:
     def __init__ (self, trial_ids):        
         self.ids = trial_ids
         
-        #Create a dictionary mapping ids to brief titles
+        #Create a dictionary mapping ids to different sections of the doc
         self.brief_titles =  {}
+        self.description = {}
+        self.brief_summary = {}
+        self.incl_criteria = {}
+        self.excl_criteria = {}
+        self.gender = {}
+        self.min_age = {}
+        self.max_age = {}
         
         #Extract tar file data
         tar = tarfile.open("clinicaltrials.gov-16_dec_2015.tgz", "r:gz")
@@ -29,8 +36,54 @@ class ClinicalTrials:
                         
                     else:
                         current_id = doc_id.text
+                        
                         for brief_title in root.iter('brief_title'):
                             self.brief_titles[current_id] = brief_title.text
+                        
+                        self.description[current_id] = ''    
+                        for detailed_description in root.iter('detailed_description'):
+                            description = ''
+                            for child in detailed_description:
+                                description += child.text.strip()
+                                
+                            self.description[current_id] = description
+                        
+                        self.brief_summary[current_id] = ''
+                        for brief_summary in root.iter('brief_summary'):
+                            summary = ''
+                            for child in brief_summary:
+                                summary +=  child.text.strip()  
+                                
+                            self.brief_summary[current_id] = summary
+
+                        self.incl_criteria[current_id] = ''
+                        self.excl_criteria[current_id] = ''
+                        for criteria in root.iter('criteria'):
+                            crit = ''
+                            for child in criteria:
+                                crit += child.text.strip()
+                                
+                            exclusion_crit_idx = crit.find('Exclusion Criteria')   
+                            
+                            if (exclusion_crit_idx) == -1:
+                                self.incl_criteria[current_id] = crit
+                                self.excl_criteria[current_id] = ''
+                                continue  
+                            
+                            self.incl_criteria[current_id] = crit[:exclusion_crit_idx]
+                            self.excl_criteria[current_id] = crit[exclusion_crit_idx:]
+                        
+                        self.gender[current_id] = None
+                        for gender in root.iter('gender'):
+                            self.gender[current_id] = gender.text
+                        
+                        self.min_age[current_id] = None
+                        for minimum_age in root.iter('minimum_age'):
+                            self.min_age[current_id] = minimum_age.text
+                        
+                        self.max_age[current_id] = None
+                        for maximum_age in root.iter('maximum_age'):
+                            self.max_age[current_id] = maximum_age.text
                     
         tar.close()
 
