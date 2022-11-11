@@ -37,12 +37,9 @@ class VectorSpaceModel:
         elif section == 'brief_summary':
             corpus = list(TrialsData.brief_summary.values())
             id_list = list(TrialsData.brief_summary.keys())
-        elif section == 'incl_criteria':
-            corpus = list(TrialsData.incl_criteria.values())
-            id_list = list(TrialsData.incl_criteria.keys())
-        elif section == 'excl_criteria':
-            corpus = list(TrialsData.excl_criteria.values())
-            id_list = list(TrialsData.excl_criteria.keys())
+        elif section == 'criteria':
+            corpus = list(TrialsData.criteria.values())
+            id_list = list(TrialsData.criteria.keys())
         else:
             print('Wrong document section.')
             return
@@ -144,12 +141,9 @@ class LMJM:
         elif section == 'brief_summary':
             corpus = list(TrialsData.brief_summary.values())
             id_list = list(TrialsData.brief_summary.keys())
-        elif section == 'incl_criteria':
-            corpus = list(TrialsData.incl_criteria.values())
-            id_list = list(TrialsData.incl_criteria.keys())
-        elif section == 'excl_criteria':
-            corpus = list(TrialsData.excl_criteria.values())
-            id_list = list(TrialsData.excl_criteria.keys())
+        elif section == 'criteria':
+            corpus = list(TrialsData.criteria.values())
+            id_list = list(TrialsData.criteria.keys())
         else:
             print('Wrong document section.')
             return

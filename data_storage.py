@@ -14,8 +14,7 @@ class ClinicalTrials:
         self.brief_titles =  {}
         self.description = {}
         self.brief_summary = {}
-        self.incl_criteria = {}
-        self.excl_criteria = {}
+        self.criteria = {}
         self.gender = {}
         self.min_age = {}
         self.max_age = {}
@@ -56,22 +55,13 @@ class ClinicalTrials:
                                 
                             self.brief_summary[current_id] = summary
 
-                        self.incl_criteria[current_id] = ''
-                        self.excl_criteria[current_id] = ''
+                        self.criteria[current_id] = ''
                         for criteria in root.iter('criteria'):
                             crit = ''
                             for child in criteria:
                                 crit += child.text.strip()
-                                
-                            exclusion_crit_idx = crit.find('Exclusion Criteria')   
                             
-                            if (exclusion_crit_idx) == -1:
-                                self.incl_criteria[current_id] = crit
-                                self.excl_criteria[current_id] = ''
-                                continue  
-                            
-                            self.incl_criteria[current_id] = crit[:exclusion_crit_idx]
-                            self.excl_criteria[current_id] = crit[exclusion_crit_idx:]
+                            self.criteria[current_id] = crit
                         
                         self.gender[current_id] = None
                         for gender in root.iter('gender'):
@@ -84,6 +74,15 @@ class ClinicalTrials:
                         self.max_age[current_id] = None
                         for maximum_age in root.iter('maximum_age'):
                             self.max_age[current_id] = maximum_age.text
+                        
+                        if self.description[current_id] == '':
+                            self.description[current_id] = self.brief_titles[current_id] +  self.brief_summary[current_id]
+                        
+                        if self.brief_summary[current_id] == '':
+                            self.brief_summary[current_id] = self.description[current_id] + self.brief_titles[current_id]
+                        
+                        if self.criteria[current_id] == '':
+                            self.criteria[current_id] = self.brief_titles[current_id]
                     
         tar.close()
 
